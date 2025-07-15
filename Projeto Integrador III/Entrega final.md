@@ -14,7 +14,12 @@ Além de apresentar a metodologia de construção, este relatório documenta de 
 
 A bobina de Tesla, inventada por Nikola Tesla em 1891, é um transformador ressonante com núcleo de ar capaz de gerar tensões extremamente elevadas em altas frequências. Tradicionalmente, o acionamento desses dispositivos era realizado por meio de um centelhador (*spark gap*), que atuava como uma chave de alta velocidade para descarregar um capacitor no enrolamento primário. Embora historicamente significativa, essa topologia clássica, conhecida como Spark Gap Tesla Coil (SGTC), apresenta limitações em termos de controle, eficiência e ruído.
 
+![As-bobinas-de-tesla](https://github.com/user-attachments/assets/d824c524-970e-4ed1-ae38-5f3538c50264)
+
+
 O avanço da eletrônica de potência permitiu o desenvolvimento de topologias de estado sólido (Solid State Tesla Coil - SSTC), que substituem o centelhador por semicondutores como MOSFETs ou IGBTs, oferecendo um controle superior. O projeto em análise propõe a construção de uma bobina de Tesla em miniatura para fins didáticos, utilizando um circuito oscilador com o CI 555 e um IGBT para o chaveamento. A escolha pela topologia de estado sólido é fundamental para permitir a modulação por áudio, um dos objetivos do projeto.
+
+![bobina](https://github.com/user-attachments/assets/bbfa19a0-3550-4ceb-80c5-486b260038b4)
 
 Uma análise comparativa entre uma Rotary Spark Gap Tesla Coil (RSGTC) e uma Double Resonant Solid State Tesla Coil (DRSSTC) demonstra a superioridade da abordagem de estado sólido. A DRSSTC apresentou quase o dobro da eficácia (relação entre o comprimento do arco e a potência de entrada), operação mais silenciosa e menor estresse sobre os componentes. A vantagem mais pertinente é a **maior controlabilidade**, um pré-requisito técnico para a modulação de áudio, que é alcançada pelo controle instantâneo da frequência e duração dos pulsos de potência. Em contraste, uma RSGTC fica presa a uma frequência de modulação baixa e fixa, tornando a reprodução de áudio fiel impossível. Portanto, a adoção de uma topologia de estado sólido é uma necessidade funcional para o projeto.
 
@@ -25,13 +30,15 @@ Uma análise comparativa entre uma Rotary Spark Gap Tesla Coil (RSGTC) e uma Dou
 O núcleo de qualquer SSTC é seu circuito de acionamento (*driver*), que define a estabilidade, eficiência e complexidade do sistema. O projeto em questão propõe uma arquitetura de oscilador externo não ressonante, utilizando o CI 555.
 
 ### 2.1 Estudo de Caso de Alta Relevância: A SSTC Musical de "Electroboom"
-
 Um trabalho análogo relevante é a SSTC musical de pequena escala documentada por "Electroboom" (2015), que serve como uma valiosa fonte de dados comparativos. O objetivo do trabalho foi construir uma SSTC capaz de modular arcos elétricos para produzir música.
 
 **Diferenças com o Projeto em Análise:**
 
 1.  **Circuito Oscilador:** Utiliza um oscilador com comparador *trigger de Schmitt* (CI MCP6562) em vez do 555. A frequência é ajustável para sintonizar a ressonância da bobina (~1 MHz).
 2.  **Chave de Potência:** Utiliza quatro MOSFETs em paralelo (SCT2450KEC, 1200 V, 10 A) em vez de um único IGBT, para distribuir a corrente e o calor.
+
+![Basic-Schematic-1024x576](https://github.com/user-attachments/assets/31f28e2d-d0b1-4398-ba79-b5910c0a3be7)
+
 
 **Resultados e Análise:**
 
@@ -104,7 +111,6 @@ A análise da literatura revela que o desafio central da arquitetura proposta é
 4.  **Reforço dos Protocolos de Segurança:** A metodologia de segurança deve ser reforçada com base nas advertências práticas, incluindo os riscos de queimaduras graves por RF (que não requerem contato direto) e a necessidade de usar ferramentas de ajuste não condutivas, conforme destacado por "Electroboom". A interferência eletromagnética (EMI) gerada também é um risco que deve ser comunicado.
 
 ---
-
 
 ## Materiais
 
