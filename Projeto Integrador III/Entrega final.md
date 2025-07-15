@@ -1,3 +1,13 @@
+# Bobina de Tesla SSTC
+
+## Introdução
+
+A bobina de Tesla, um dos inventos mais emblemáticos de Nikola Tesla, representa um marco na história da eletricidade, demonstrando a capacidade de gerar tensões elétricas altíssimas em alta frequência através de um transformador ressonante com núcleo de ar. Tradicionalmente, esses dispositivos utilizavam centelhadores (*spark gaps*) para seu acionamento, uma tecnologia robusta, porém limitada em controle e eficiência. Com o avanço da eletrônica de potência, surgiram as Bobinas de Tesla de Estado Sólido (SSTC), que substituem os componentes mecânicos por semicondutores, abrindo portas para um controle preciso e aplicações inovadoras, como a modulação de áudio.
+
+O presente trabalho detalha o processo de projeto, construção e análise de um protótipo de Bobina de Tesla de Estado Sólido, tomando como referência o projeto de código aberto "LabCoatz SSTC2.0 (Mjolnir)". A principal característica desta topologia é a utilização de um circuito auto-ressonante, que emprega o feedback do próprio campo eletromagnético da bobina para determinar a frequência de chaveamento. Essa abordagem, em teoria, promete maior eficiência e simplicidade em comparação com as topologias baseadas em osciladores de frequência fixa discutidas na literatura.
+
+Além de apresentar a metodologia de construção, este relatório documenta de forma transparente os desafios práticos enfrentados durante a implementação, desde a especificação incorreta de componentes críticos até as falhas em cascata resultantes. O objetivo é, portanto, não apenas demonstrar a viabilidade da operação do dispositivo, mas também fornecer uma análise detalhada das causas dos problemas encontrados, transformando as falhas em valiosos aprendizados de engenharia que fundamentam as recomendações para a otimização e o sucesso de trabalhos futuros.
+
 # Revisão da Literatura: Análise Comparativa de Topologias e Implementações de Bobinas de Tesla de Estado Sólido para Aplicações Didáticas
 
 ## 1.0 Introdução: A Evolução para Topologias de Estado Sólido e a Justificativa do Projeto
@@ -86,7 +96,7 @@ A análise da literatura revela que o desafio central da arquitetura proposta é
 | **Pranoto, H. et al. (2023)** | SSTC (Teste de Isolação) | Driver de Ponte-H | IGBTs (Ponte-H) | 150 kV @ 22 kHz. | Fornece um benchmark de desempenho para um sistema baseado em IGBT; valida o uso de IGBTs para alta tensão. | Escala industrial; frequência de operação muito baixa para uma aplicação musical; topologia de driver complexa. |
 | **Plangklang, A. et al. (2024)** | SSTC (Simulação) | N/A (Foco em geometria) | N/A | Otimização de campo elétrico via geometria do enrolamento. | Destaca a importância crítica da construção física (ângulo do primário) para o desempenho, além da eletrônica. | Requer software de simulação FEM especializado; o método não é diretamente replicável, mas o princípio sim. |
 
-### Recomendações Finais
+### Conclusão
 
 1.  **Metodologia de Sintonia:** Dedicar uma parte substancial dos testes à caracterização quantitativa da sensibilidade à frequência do oscilador. Recomenda-se desenvolver um procedimento de sintonia manual robusto, utilizando um potenciômetro de precisão, e documentar o desempenho em função de desvios da frequência de ressonância.
 2.  **Seleção e Acionamento de Componentes:** A escolha do IGBT deve ser refinada para um modelo *fast-switching*. O projeto do circuito de gate driver não pode ser subestimado e deve ser projetado para fornecer a corrente de pico especificada pelo fabricante para garantir comutação rápida e minimizar perdas.
@@ -95,6 +105,159 @@ A análise da literatura revela que o desafio central da arquitetura proposta é
 
 ---
 
+
+## Materiais
+
+# Lista de materiais
+
+| Componente | Quantidade |
+| --- | --- |
+| IGBT de alta potência (FGA60N65SMD) | 2 |
+| CI driver de gate (UCC27425) | 1 |
+| CI inversor hexagonal Schmitt trigger (SN74HC14AN) | 1 |
+| Temporizador 555 (NE555P) | 1 |
+| Regulador de tensão linear de 12V (L7812CV) | 1 |
+| Regulador de tensão linear de 5V (L7805CV) | 1 |
+| Diodo (1N4148) | 4 |
+| Diodo (1N4007) | 2 |
+| Capacitor eletrolítico (25V/220uF) | 1 |
+| Capacitor eletrolítico (25V/470uF) | 2 |
+| Resistor (5K Ω) | 1 |
+| Resistor (6.8 Ω) | 2 |
+| Resistor (50K Ω) | 1 |
+| Resistor (2.2K Ω) | 1 |
+| Resistor (1K Ω) | 1 |
+| Potenciômetro (1M Ω) | 2 |
+| Potenciômetro (50K Ω) | 1 |
+| Chave Liga/Desliga | 2 |
+| Capacitor cerâmico (1uF) | 1 |
+| Capacitor de filme (0.1uF) | 2 |
+| Capacitor cerâmico (0.33uF) | 1 |
+| Capacitor cerâmico (10uF) | 1 |
+| Capacitor de filme (0.82uF) | 2 |
+| Núcleo de ferrite toroidal | 1 |
+| Dissipador de calor (TO-247) | 2 |
+| Soquete para CI (DIP-14) | 1 |
+| Soquete para CI (DIP-8) | 2 |
+| Conector borne em bloco | 3 |
+| Transformador (12VAC) | 1 |
+| Ponte retificadora (>25V) | 1 |
+| Capacitor eletrolítico (>250V / >500uF) | 2 |
+| Termistor de Inrush (SL32 1 ohm) | 1 |
+| Ponte retificadora (10A / 1000V) | 1 |
+
+# Projeto Bobina de Tesla SSTC - Relatório Técnico
+
+Este documento descreve a concepção, os testes e os resultados obtidos no desenvolvimento do protótipo de uma Bobina de Tesla de Estado Sólido (SSTC), baseada no projeto de referência "LabCoatz SSTC2.0 (Mjolnir)".
+
+## 1. Descrição do Protótipo (Placa de Controle Principal - PCB)
+
+O circuito de controle principal da SSTC foi selecionado por sua abordagem simplificada, que utiliza a própria frequência de ressonância da bobina secundária para o controle do chaveamento de potência, eliminando a necessidade de circuitos osciladores complexos.
+
+![FEZ40MRKVF8V2XM](https://github.com/user-attachments/assets/f424988c-1d33-4a9b-93d5-4e360b6d7fad)
+
+O fluxo de operação do circuito é o seguinte:
+
+1.  **Captura de Sinal:** Uma antena próxima à bobina secundária capta o campo eletromagnético, que contém a frequência de ressonância natural do sistema.
+2.  **Filtragem e Condicionamento:** O sinal da antena é direcionado a um circuito integrado **74HC14 (Porta Lógica NOT com Schmitt Trigger)**. O sinal passa por duas portas inversoras em sequência. A função do Schmitt Trigger é garantir um sinal digital limpo, livre de ruídos, enquanto a dupla inversão restaura a fase original do sinal.
+3.  **Circuito de Interrupção (555 Timer):** Em paralelo, um oscilador baseado no circuito integrado **555** gera um sinal de interrupção com frequência ajustável entre 30 Hz e 100 Hz e um ciclo de trabalho (duty cycle) variável de 10% a 50%. Este sinal é enviado ao pino "Enable" do driver dos IGBTs para controlar a potência total do sistema.
+4.  **Driver de Potência (Gate Driver):** O sinal de ressonância (do 74HC14) e o sinal de interrupção (do 555) são enviados a um driver de IGBTs, responsável por fornecer a corrente necessária para acionar os transistores de potência.
+5.  **Acoplamento e Isolação (GDT):** A saída do driver alimenta um **Gate Driver Transformer (GDT)**. Este transformador isola galvanicamente o circuito de controle (baixa tensão) do circuito de potência (alta tensão), protegendo os componentes de controle.
+6.  **Chaveamento de Potência (IGBTs):** O GDT aciona os gates de dois IGBTs **FGA60N65**, que são responsáveis por chavear a alta tensão na bobina primária na frequência de ressonância.
+
+<img width="2235" height="1192" alt="FYK73ALKVF8V2XO" src="https://github.com/user-attachments/assets/f0c39eea-c438-465b-9660-25d1a9400691" />
+
+## 2. Descrição dos Testes, Análise e Problemas Encontrados
+
+Os testes foram focados na validação sequencial do circuito de controle e na operação inicial da bobina em baixa potência.
+
+### 2.1. Teste de Chaveamento em Baixa Frequência
+* **Objetivo:** Validar a lógica de funcionamento do circuito de controle.
+* **Metodologia:** Utilizou-se o sinal de 60 Hz da rede elétrica, captado pelo circuito, para observar o comportamento do chaveamento em baixa frequência.
+* **Resultado e Primeiro Problema Identificado:** Durante este teste, foi detectado um erro crítico de projeto relacionado ao componente do driver.
+    * **Componente Esperado:** UCC27425 (possui uma saída normal e uma invertida).
+    * **Componente Utilizado:** UCC27524 (adquirido por engano, possui duas saídas não-invertidas).
+    * **Consequência:** A diferença de potencial nos terminais do GDT era sempre nula, impedindo o acionamento dos IGBTs.
+
+![TEK0000](https://github.com/user-attachments/assets/b88411ab-c314-4f71-87cc-1b6a5fb81397)
+![TEK0001](https://github.com/user-attachments/assets/9357936c-9bb7-4fe2-a54b-4e049bcc59eb)
+
+### 2.2. Tentativa de Solução e Segundo Problema
+* **Solução Implementada:** Foi realizada uma modificação ("jumper") para alimentar uma das entradas do driver com um sinal já invertido da primeira porta do 74HC14.
+* **Resultado:** A modificação gerou com sucesso sinais invertidos na saída do driver, mas introduziu um novo problema: **Atraso de Propagação (Delay)**.
+* **Análise do Problema:** Um sinal passava por uma porta lógica (delay ~83 ns), enquanto o outro passava por duas. Essa defasagem, em alta frequência, causa "tempos mortos", perda de potência e estresse nos componentes de potência.
+
+![TEK0002](https://github.com/user-attachments/assets/9221af4a-b3bb-411a-98b9-fda863bf625a)
+![TEK0003](https://github.com/user-attachments/assets/761d2545-719e-4b06-b55d-fa9efc7b9301)
+![TEK0004](https://github.com/user-attachments/assets/c3cc134c-a378-4274-b352-ebe4f03b43e6)
+
+### 2.3. Teste de Operação em Baixa Potência e Falha dos Componentes
+* **Metodologia:** O protótipo foi testado com uma tensão de entrada reduzida (aprox. 150 Vac) apesar da defasagem de sinal.
+* **Resultado:** A bobina funcionou e gerou faíscas, validando que o conceito geral era funcional.
+* **Problemas Finais e Falha em Cascata:** Durante a operação, foi observado que a bobina secundária estava fisicamente danificada (fio rompido).
+    * **Consequências do Dano:** Os rompimentos causaram arcos internos (curtos-circuitos), levando a surtos de corrente no circuito primário e à **queima de múltiplos componentes:** 4 drivers UCC27524, 1 regulador de tensão 7812 e 3 IGBTs.
+
+
+![WhatsApp Image 2025-07-15 at 15 46 24](https://github.com/user-attachments/assets/5386ec0f-fda0-4a60-a652-c8c6ed504a06)
+
+## 3. Tabela Resumo dos Problemas
+
+| Problema Identificado        | Causa Raiz                                                        | Solução Tentada / Próximo Passo                   | Resultado / Consequência                                          |
+| :--------------------------- | :---------------------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------------- |
+| **Driver de IGBT Incorreto** | Compra do componente errado (UCC27524 em vez de UCC27425).         | Jumper utilizando sinal invertido do 74HC14.      | Gerou o problema de Atraso de Propagação (Delay).                 |
+| **Atraso de Propagação** | Diferença no número de portas lógicas no caminho de cada sinal.     | N/A (requer componente correto).                  | Perda de potência no GDT, tempos mortos, estresse nos componentes. |
+| **Bobina Secundária Rompida** | Dano físico preexistente ou ocorrido durante o manuseio.          | N/A (requer reparo/reconstrução da bobina).         | Curtos-circuitos internos, perda de potência, instabilidade.      |
+| **Queima de Componentes** | Surtos de corrente causados pela combinação dos problemas acima. | Interrupção dos testes.                           | Perda de 4 drivers, 1 regulador e 3 IGBTs.                        |
+
+## 4. Conclusão dos Testes
+
+Apesar dos resultados práticos limitados, os testes permitiram validar a lógica fundamental do circuito e identificar com precisão uma cadeia de falhas. O aprendizado principal aponta para a necessidade da **substituição do driver pelo modelo correto (UCC27425)** e o **reparo da bobina secundária** como passos cruciais para a continuidade e sucesso do projeto.
+
+
+https://github.com/user-attachments/assets/8da18443-600b-4ca2-9458-0d70e077268a
+
+
+## 5. Sugestões de Trabalhos Futuros
+
+Com base nos resultados e aprendizados obtidos, são propostos os seguintes trabalhos futuros para a correção, melhoria e evolução do projeto.
+
+### 5.1. Correções e Melhorias Imediatas
+
+Estes são os passos essenciais para tornar o protótipo atual funcional, estável e seguro.
+
+* **Substituição do Driver de IGBTs:**
+    * **Ação:** Substituir o CI UCC27524 pelo modelo correto especificado no projeto original, o **UCC27425**.
+    * **Justificativa:** Esta correção é fundamental para eliminar a defasagem de sinal (delay), garantir um chaveamento anti-fase perfeito (push-pull) no GDT e maximizar a transferência de potência para os IGBTs, resolvendo a causa raiz da ineficiência do circuito.
+
+* **Reconstrução da Bobina Secundária:**
+    * **Ação:** Construir uma nova bobina secundária, garantindo a integridade do enrolamento e a qualidade do isolamento.
+    * **Justificativa:** Uma bobina secundária íntegra, com fio contínuo e múltiplas camadas de verniz de alta isolação, é vital para evitar arcos internos (curtos-circuitos), maximizar a ressonância e a tensão de saída, e prevenir surtos de corrente que danificam o circuito de controle.
+
+* **Otimização da Placa Retificadora de Tensão:**
+    * **Ação:** Redesenhar ou aprimorar o circuito de retificação de entrada.
+    * **Melhorias Sugeridas:**
+        * **Aumentar a Capacitância:** Adicionar mais capacitores de filtro para reduzir o *ripple* da tensão DC, fornecendo uma alimentação mais estável para a ponte de IGBTs.
+        * **Implementar um Soft-Start:** Adicionar um circuito de partida suave (por exemplo, com um resistor de potência e um relé, ou um termistor NTC) para limitar a corrente de partida (*inrush current*) que carrega os capacitores, evitando que disjuntores desarmem e reduzindo o estresse sobre os diodos retificadores.
+        * **Diodos Robustos:** Utilizar diodos de ponte retificadora com maior capacidade de corrente e tensão para aumentar a margem de segurança.
+
+### 5.2. Evoluções e Aplicações Avançadas
+
+Após a validação do protótipo corrigido, o projeto pode evoluir para incorporar funcionalidades mais complexas e explorar aplicações fascinantes.
+
+* **Implementação:** Substituir o circuito interrupter baseado no 555 por uma interface que aceite uma entrada de áudio, idealmente utilizando fibra óptica para isolamento e segurança do equipamento de som (PC, celular).
+
+* **Implementação de Proteções Robustas:**
+    * **Conceito:** Adicionar circuitos de proteção ativa para evitar a queima de componentes em caso de falhas.
+    * **Implementação:** Desenvolver um circuito de **proteção contra sobrecorrente (OCD - Over-Current Detection)**. Utilizando um transformador de corrente no primário da bobina, o circuito pode desligar o sinal do interrupter instantaneamente se a corrente ultrapassar um limite seguro.
+
+* **Evolução para DRSSTC (Dual Resonant Solid State Tesla Coil):**
+    * **Conceito:** O próximo passo em performance. Adicionar um capacitor de ressonância em série com a bobina primária, criando um segundo circuito ressonante.
+    * **Benefício:** A dupla ressonância permite uma transferência de energia muito mais eficiente entre o primário e o secundário, resultando em arcos elétricos significativamente maiores e mais potentes com a mesma alimentação.
+
+* **Exploração de Transmissão de Energia Sem Fio:**
+    * **Conceito:** Utilizar o campo eletromagnético de alta frequência gerado pela bobina para alimentar dispositivos à distância.
+    * **Demonstração:** Realizar experimentos práticos como acender lâmpadas fluorescentes, incandescentes ou LEDs a metros de distância da bobina, sem qualquer conexão física, demonstrando os princípios de Nikola Tesla.
+
 ## Referências
 
 1.  **Plangklang, A., Pattanadech, N., & Yutthagowith, P. (2024).** *Simulation and Analysis of the Optimal Electric Field from Modifications to the Winding Design for the Tesla Transformer*. Applied Sciences, 14(3), 1279.
@@ -102,3 +265,4 @@ A análise da literatura revela que o desafio central da arquitetura proposta é
 3.  **Electroboom. (2015, May 26).** *Making a Solid State Tesla Coil that Plays Music*. Electroboom.com.
 4.  **Pranoto, H. et al. (2023).** *COMPARISON OF INSULATION TESTING IN LABORATORY*. IJICIC.
 5.  **Pranoto, H. et al. (2023).** *Development of musical solid-state Tesla coil based on pulse...*.
+6.   **PlasmaGlow. (2022).** Building the Ultimate Solid State Tesla Coil (MUSIC!). Instructables.
